@@ -409,7 +409,11 @@ def analyze():
             except Exception as e:
                 print(f"TF Inference Fault: {e}")
 
-        ml_risk_score = max(xgb_risk_score, lstm_risk_score)
+        ml_risk_score = round((xgb_risk_score + lstm_risk_score) / 2, 2)
+
+        print("XGBoost Risk Score:", xgb_risk_score)
+        print("Bi-LSTM Risk Score:", lstm_risk_score)
+        print("Combined ML Risk Score:", ml_risk_score)
 
         # --- TIER 2 & 3: PARALLEL OSINT + PAYLOAD ---
         # Run all network checks in parallel for speed
@@ -560,7 +564,7 @@ def analyze_bulk():
                         lstm_risk_score = float(round(lstm_prob * 100, 2))
                     except: pass
                 
-                ml_score = max(xgb_risk_score, lstm_risk_score)
+                ml_score = round((xgb_risk_score + lstm_risk_score) / 2, 2)
                 vt = check_virustotal(url)
                 
                 final_score = ml_score
