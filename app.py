@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
 
 # --- TENSORFLOW IMPORTS ---
 import tensorflow as tf
@@ -31,6 +31,14 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 app = Flask(__name__)
 CORS(app) 
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'healthy',
+        'xgboost_loaded': xgb_model is not None,
+        'lstm_loaded': lstm_model is not None
+    }), 200
 
 print("Initializing Enterprise Threat Intelligence System...")
 
@@ -72,17 +80,40 @@ except Exception as e:
     tokenizer = None
 
 # Cache ChromeDriver path at startup (avoids re-downloading on every request)
-print("Caching ChromeDriver path...")
-try:
-    CHROME_DRIVER_PATH = ChromeDriverManager().install()
-    print(f"ChromeDriver cached: {CHROME_DRIVER_PATH}")
-except Exception as e:
-    print(f"WARNING: ChromeDriver cache failed: {e}")
-    CHROME_DRIVER_PATH = None
+# print("Caching ChromeDriver path...")
+# try:
+#     CHROME_DRIVER_PATH = ChromeDriverManager().install()
+#     print(f"ChromeDriver cached: {CHROME_DRIVER_PATH}")
+# except Exception as e:
+#     print(f"WARNING: ChromeDriver cache failed: {e}")
+#     CHROME_DRIVER_PATH = None
+
+
+# Chrome/Chromium paths supplied by Docker environment
+CHROME_BIN = os.getenv("CHROME_BIN", "/usr/bin/chromium")
+CHROMEDRIVER_PATH = os.getenv(
+    "CHROMEDRIVER_PATH",
+    "/usr/bin/chromedriver"
+)
+
+if os.path.exists(CHROME_BIN):
+    print(f"Chromium found: {CHROME_BIN}")
+else:
+    print(f"WARNING: Chromium not found at {CHROME_BIN}")
+
+if os.path.exists(CHROMEDRIVER_PATH):
+    print(f"ChromeDriver found: {CHROMEDRIVER_PATH}")
+else:
+    print(f"WARNING: ChromeDriver not found at {CHROMEDRIVER_PATH}")
+
+
 
 def _get_chrome_options():
     """Return pre-configured Chrome options for headless screenshot capture."""
     chrome_options = Options()
+
+    chrome_options.binary_location = CHROME_BIN
+
     for opt in ["--headless", "--disable-gpu", "--no-sandbox", "--window-size=1280x800",
                  "--ignore-certificate-errors", "--disable-web-security",
                  "--disable-extensions", "--disable-dev-shm-usage",
@@ -129,8 +160,13 @@ def analyze_payload(url):
         # Selenium: Screenshot + Dynamic JS Analysis (using cached driver)
         if CHROME_DRIVER_PATH:
             try:
-                service = ChromeService(CHROME_DRIVER_PATH)
-                driver = webdriver.Chrome(service=service, options=_get_chrome_options())
+                # service = ChromeService(CHROME_DRIVER_PATH)
+                # driver = webdriver.Chrome(service=service, options=_get_chrome_options())
+                service = ChromeService(CHROMEDRIVER_PATH)
+                driver = webdriver.Chrome(
+                    service=service,
+                    options=_get_chrome_options()
+                )
                 
                 try:
                     driver.set_page_load_timeout(6)
@@ -625,4 +661,9 @@ if __name__ == '__main__':
     print(" 3. If using a VPN (e.g. WARP, Tailscale), temporarily turn it off.")
     print("="*60 + "\n")
 
-    app.run(host='0.0.0.0', debug=True, port=5001)
+    # app.run(host='0.0.0.0', debug=True, port=5001)
+    app.run(
+    host='0.0.0.0',
+    port=int(os.environ.get('PORT', 5001)),
+    debug=False
+)
