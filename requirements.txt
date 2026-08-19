@@ -1,0 +1,17 @@
+Flask
+Flask-Cors
+gunicorn
+joblib
+pandas
+scikit-learn
+xgboost
+beautifulsoup4
+selenium
+python-whois
+requests
+urllib3
+python-dotenv
+python-dateutil
+tensorflow
+h5py
+qrcode

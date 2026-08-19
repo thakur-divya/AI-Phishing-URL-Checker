@@ -1,6 +1,27 @@
-Environments
-
-venv/
-.env
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
+
+# Testing/cache
+.pytest_cache/
+.coverage
+
+# Logs
+*.log
