@@ -74,6 +74,4 @@ The platform features a responsive, **Glassmorphism-styled dashboard** built wit
 
    *The server will start on `http://127.0.0.1:5001`. (Port 5001 is used to bypass macOS AirPlay port collisions).*
 
-## Research Context
 
-This project was developed as a 7th-Semester Major Project by Cyrus Jones, Tanishka Rathore and Diyva Thakur, focusing on the intersection of cybersecurity, ensemble AI, and Explainable AI (XAI). 
